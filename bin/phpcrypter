@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+require file_exists(__DIR__.'/../vendor/autoload.php') ? __DIR__.'/../vendor/autoload.php' : __DIR__.'/../../../autoload.php';
+
+use Crypter\Console\Commands\Decrypt;
+use Crypter\Console\Commands\Encrypt;
+use Crypter\Console\Commands\Generate;
+
+$application = new Symfony\Component\Console\Application();
+
+$application->add(new Generate());
+$application->add(new Encrypt());
+$application->add(new Decrypt());
+
+$application->run();

@@ -1,0 +1,5 @@
+ARG_ENABLE("skeleton", "enable skeleton support", "no");
+
+if (PHP_SKELETON != "no") {
+    EXTENSION("skeleton", "skeleton.c");
+}
