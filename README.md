@@ -30,7 +30,7 @@ This package was built with support for Windows in mind, however, it has not bee
 The below assumes that you're currently in your application's root directory.
 
 ```console
-$ composer require chr1sc0des/phpcrypter --dev
+$ composer require chrisvpearse/phpcrypter --dev
 ```
 
 ## Usage
@@ -169,7 +169,7 @@ When you're ready to deploy your encrypted files, you should build an extension 
 In the event that you need to install multiple extensions on the same server (for different projects), you should consider installing **phpcrypter** globally:
 
 ```console
-$ composer global require chr1sc0des/phpcrypter
+$ composer global require chrisvpearse/phpcrypter
 ```
 
 #### Generate a PHP Extension Skeleton With a Payload
@@ -196,7 +196,7 @@ You are now ready to deploy your encrypted PHP files! :rocket:
 
 ## Credits
 
-* [Christopher Pearse](https://x.com/chr1sc0des)
+* [Christopher Pearse](https://x.com/chrisvpearse)
 
 ## License
 

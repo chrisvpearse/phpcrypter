@@ -1,11 +1,11 @@
 {
-    "name": "chr1sc0des/phpcrypter",
+    "name": "chrisvpearse/phpcrypter",
     "description": "A PHP source code encrypter.",
     "keywords": [
-        "chr1sc0des",
+        "chrisvpearse",
         "phpcrypter"
     ],
-    "homepage": "https://github.com/chr1sc0des/phpcrypter",
+    "homepage": "https://github.com/chrisvpearse/phpcrypter",
     "license": "MIT",
     "authors": [
         {
