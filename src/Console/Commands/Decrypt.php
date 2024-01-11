@@ -15,6 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'decrypt')]
 class Decrypt extends Command
 {
+    private $cipherAlgo = 'aes-256-cbc';
+
     protected function configure()
     {
         $this->addArgument('payload', InputArgument::REQUIRED);
@@ -25,8 +27,6 @@ class Decrypt extends Command
     {
         $payload = $input->getArgument('payload');
         $path = $input->getArgument('path');
-
-        $cipherAlgo = 'AES-256-CBC';
 
         $payload = base64_decode($payload);
 
@@ -40,7 +40,7 @@ class Decrypt extends Command
 
         $key = base64_decode($key);
 
-        if (! $key || strlen($key) != openssl_cipher_key_length($cipherAlgo)) {
+        if (! $key || strlen($key) != openssl_cipher_key_length($this->cipherAlgo)) {
             $output->writeln('<error>The key within the payload is invalid</error>');
 
             return Command::FAILURE;
@@ -52,7 +52,7 @@ class Decrypt extends Command
             if (is_file($p)) {
                 $p = new SplFileInfo($p);
 
-                $this->decrypt($output, $p, $name, $cipherAlgo, $key);
+                $this->decrypt($output, $p, $name, $key);
             } elseif (is_dir($p)) {
                 $iterator = new RegexIterator(
                     new RecursiveIteratorIterator(
@@ -66,7 +66,7 @@ class Decrypt extends Command
                 );
 
                 foreach ($iterator as $item) {
-                    $this->decrypt($output, $item, $name, $cipherAlgo, $key);
+                    $this->decrypt($output, $item, $name, $key);
                 }
             }
         }
@@ -74,7 +74,7 @@ class Decrypt extends Command
         return Command::SUCCESS;
     }
 
-    private function decrypt($output, $file, $name, $cipherAlgo, $key)
+    private function decrypt($output, $file, $name, $key)
     {
         $contents = file_get_contents($file->getPathname());
 
@@ -88,7 +88,7 @@ class Decrypt extends Command
 
                 $decrypted = openssl_decrypt(
                     $encrypted,
-                    $cipherAlgo,
+                    $this->cipherAlgo,
                     $key,
                     0,
                     base64_decode($iv)

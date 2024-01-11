@@ -84,7 +84,6 @@ You should then add the following line to your `php.ini` configuration file:
 
 ```
 extension=foo.so
-foo.decrypt=1
 ```
 
 The location of the loaded `php.ini` configuration file can be found via the following command:
@@ -145,11 +144,9 @@ The PHP code block should be self explanatory, however, the final line contains 
 
 #### How does it work?
 
-By default, when the extension is _loaded_, it simply hooks into the internals of PHP, namely the `zend_compile_file()` function, but it doesn't do anything, unless the `foo.decrypt` configuration option is set to `1`.
+By default, when the extension is _loaded_, it simply hooks into the internals of PHP, namely the `zend_compile_file()` function, but it doesn't do anything, unless the `foo.decrypt` configuration option is set to `1` (it is set to `1` by default).
 
-In production, it is recommended that you set `foo.decrypt` to `0` in your `php.ini` configuration file. This means that there's no additional overhead for unencrypted PHP files (which will typically be any open source packages in your Composer dependencies).
-
-Then, it is recommended that you use `ini_set('foo.decrypt', 1)` in any unencrypted PHP files which `include`/`require` encrypted files. For example, if you would like to encrypt a controller, you should use `ini_set()` within an unencrypted base controller. You cannot use `ini_set()` within encrypted PHP files because `zend_compile_file()` works at a lower level.
+If you set `foo.decrypt` to `0` in your `php.ini` configuration file, it is recommended that you use `ini_set('foo.decrypt', 1)` in any unencrypted PHP files which `include`/`require` encrypted files. For example, if you would like to encrypt a controller, you should use `ini_set()` within an unencrypted base controller. You cannot use `ini_set()` within encrypted PHP files because `zend_compile_file()` works at a lower level.
 
 Below are some [autocannon](https://github.com/mcollina/autocannon) benchmarks (10 connections for 10s):
 

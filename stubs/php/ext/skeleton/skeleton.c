@@ -145,11 +145,11 @@ static zend_op_array* new_compile_file(zend_file_handle *file_handle, int type)
 }
 
 static void php_skeleton_init_globals(zend_skeleton_globals *skeleton_globals) {
-    skeleton_globals->decrypt = 0;
+    skeleton_globals->decrypt = 1;
 }
 
 PHP_INI_BEGIN()
-    STD_PHP_INI_BOOLEAN("skeleton.decrypt", "0", PHP_INI_ALL, OnUpdateBool, decrypt, zend_skeleton_globals, skeleton_globals)
+    STD_PHP_INI_BOOLEAN("skeleton.decrypt", "1", PHP_INI_ALL, OnUpdateBool, decrypt, zend_skeleton_globals, skeleton_globals)
 PHP_INI_END()
 
 PHP_MINIT_FUNCTION(skeleton)

@@ -4,7 +4,7 @@
 extern zend_module_entry skeleton_module_entry;
 #define phpext_skeleton_ptr &skeleton_module_entry
 
-#define SKELETON_VERSION "0.1.0"
+#define SKELETON_VERSION "0.1.1"
 #define SKELETON_SIG "<?php // @skeleton"
 
 #define SKELETON_CIPHER_ALGO "AES-256-CBC"

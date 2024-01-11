@@ -14,6 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'generate')]
 class Generate extends Command
 {
+    private $cipherAlgo = 'aes-256-cbc';
+
     protected function configure()
     {
         $this->addArgument('name', InputArgument::REQUIRED);
@@ -77,11 +79,9 @@ class Generate extends Command
             }
         }
 
-        $cipherAlgo = 'AES-256-CBC';
-
         if (is_null($payload)) {
-            $key = random_bytes(openssl_cipher_key_length($cipherAlgo));
-            $xorKey = random_bytes(openssl_cipher_key_length($cipherAlgo));
+            $key = random_bytes(openssl_cipher_key_length($this->cipherAlgo));
+            $xorKey = random_bytes(openssl_cipher_key_length($this->cipherAlgo));
         } else {
             $payload = base64_decode($payload);
 
@@ -96,13 +96,13 @@ class Generate extends Command
             $key = base64_decode($key);
             $xorKey = base64_decode($xorKey);
 
-            if (! $key || strlen($key) != openssl_cipher_key_length($cipherAlgo)) {
+            if (! $key || strlen($key) != openssl_cipher_key_length($this->cipherAlgo)) {
                 $output->writeln('<error>The key within the payload is invalid</error>');
 
                 return Command::FAILURE;
             }
 
-            if (! $xorKey || strlen($xorKey) != openssl_cipher_key_length($cipherAlgo)) {
+            if (! $xorKey || strlen($xorKey) != openssl_cipher_key_length($this->cipherAlgo)) {
                 $output->writeln('<error>The XOR key within the payload is invalid</error>');
 
                 return Command::FAILURE;

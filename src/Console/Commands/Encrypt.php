@@ -15,6 +15,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'encrypt')]
 class Encrypt extends Command
 {
+    private $cipherAlgo = 'aes-256-cbc';
+    private $version = '0.1.1';
+
+    private $bladeCompiler;
+
     protected function configure()
     {
         $this->addArgument('payload', InputArgument::REQUIRED);
@@ -25,8 +30,6 @@ class Encrypt extends Command
     {
         $payload = $input->getArgument('payload');
         $path = $input->getArgument('path');
-
-        $cipherAlgo = 'AES-256-CBC';
 
         $payload = base64_decode($payload);
 
@@ -40,10 +43,17 @@ class Encrypt extends Command
 
         $key = base64_decode($key);
 
-        if (! $key || strlen($key) != openssl_cipher_key_length($cipherAlgo)) {
+        if (! $key || strlen($key) != openssl_cipher_key_length($this->cipherAlgo)) {
             $output->writeln('<error>The key within the payload is invalid</error>');
 
             return Command::FAILURE;
+        }
+
+        if (file_exists(__DIR__.'/../../../../../../bootstrap/app.php')) {
+            $app = require_once __DIR__.'/../../../../../../bootstrap/app.php';
+            $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+            $this->bladeCompiler = $app->make('blade.compiler');
         }
 
         foreach ($path as $p) {
@@ -52,7 +62,7 @@ class Encrypt extends Command
             if (is_file($p)) {
                 $p = new SplFileInfo($p);
 
-                $this->encrypt($output, $p, $name, $cipherAlgo, $key);
+                $this->encrypt($output, $p, $name, $key);
             } elseif (is_dir($p)) {
                 $iterator = new RegexIterator(
                     new RecursiveIteratorIterator(
@@ -66,7 +76,7 @@ class Encrypt extends Command
                 );
 
                 foreach ($iterator as $item) {
-                    $this->encrypt($output, $item, $name, $cipherAlgo, $key);
+                    $this->encrypt($output, $item, $name, $key);
                 }
             }
         }
@@ -74,7 +84,7 @@ class Encrypt extends Command
         return Command::SUCCESS;
     }
 
-    private function encrypt($output, $file, $name, $cipherAlgo, $key)
+    private function encrypt($output, $file, $name, $key)
     {
         $contents = file_get_contents($file->getPathname());
 
@@ -84,19 +94,27 @@ class Encrypt extends Command
             if (substr($contents, 0, strlen($sig)) == $sig) {
                 $output->writeln('<comment>Already Encrypted.</comment> '.$file->getPathname());
             } else {
-                $iv = random_bytes(openssl_cipher_iv_length($cipherAlgo));
+                if ($this->bladeCompiler && strpos($file->getFilename(), '.blade.php') !== false) {
+                    $contents = $this->bladeCompiler->compileString($contents);
+
+                    $newPath = $file->getPath().DIRECTORY_SEPARATOR.str_replace('.blade.php', '.php', $file->getFilename());
+
+                    if (file_put_contents($file->getPathname(), $contents) && rename($file->getPathname(), $newPath)) {
+                        $output->writeln('<info>Compiled Blade!</info> '.$file->getPathname());
+                    }
+                }
+
+                $iv = random_bytes(openssl_cipher_iv_length($this->cipherAlgo));
 
                 $encrypted = openssl_encrypt(
                     $contents,
-                    $cipherAlgo,
+                    $this->cipherAlgo,
                     $key,
                     0,
                     $iv
                 );
 
-                $version = '0.1.0';
-
-                $encoded = base64_encode($version.','.base64_encode($iv).','.$encrypted);
+                $encoded = base64_encode($this->version.','.base64_encode($iv).','.$encrypted);
 
                 $php = <<<PHP
                 {$sig}
@@ -104,8 +122,10 @@ class Encrypt extends Command
                 #{$encoded}
                 PHP;
 
-                if (file_put_contents($file->getPathname(), $php)) {
-                    $output->writeln('<info>Encrypted!</info> '.$file->getPathname());
+                $p = $newPath ?? $file->getPathname();
+
+                if (file_put_contents($p, $php)) {
+                    $output->writeln('<info>Encrypted!</info> '.$p);
                 }
             }
         }
